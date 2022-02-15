@@ -89,21 +89,21 @@ int main() {
 <script>
     // shift + tab, tab
     $('#mde').addEventListener('keydown', function (e) {
+        e.preventDefault()
+
         const start = this.selectionStart
         const end = this.selectionEnd
 
         switch (true) {
             case e.shiftKey && e.keyCode == 9:
-                e.preventDefault()
-
                 this.value = this.value.substring(0, start - 4) + this.value.substring(end)
                 this.selectionStart = this.selectionEnd = start - 4
+
                 break;
             case e.keyCode == 9:
-                e.preventDefault()
-
                 this.value = this.value.substring(0, start) + "    " + this.value.substring(end)
                 this.selectionStart = this.selectionEnd = start + 4
+
                 break;
         }
     })
