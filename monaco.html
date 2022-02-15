@@ -12,12 +12,14 @@
 
 <body>
     <h2>Monaco Editor Sample</h2>
+    <button onclick="editor.updateOptions({ readOnly: false })">Enable writing</button>
+    <button onclick="editor.updateOptions({ readOnly: true })">Disable writing</button>
     <div id="container" style="width: 800px; height: 600px; border: 1px solid grey"></div>
 </body>
-<script type="module">
+
+<script type="text/javascript">
     let editor
 
-    require.config({ paths: { vs: "monaco-editor/min/vs" } });
 
     let data = `
 # Hello markdown
@@ -46,8 +48,14 @@ int main() {
     return 0;
 }
 \`\`\`
-
 `
+
+    window.onload = function () { }
+
+</script>
+
+<script type="module">
+    require.config({ paths: { vs: "monaco-editor/min/vs" } });
 
     document.addEventListener("DOMContentLoaded", function () {
         require(['vs/editor/editor.main'], function () {
@@ -60,11 +68,15 @@ int main() {
             })
 
         })
-    })
 
-    window.onload = function() {
-        // editor.updateOptions({ readOnly: false })
-    }
+        function enableEdit() {
+            editor.updateOptions({ readOnly: false })
+        }
+
+        function disallowEdit() {
+            editor.updateOptions({ readOnly: true })
+        }
+    })
 </script>
 
 </html>
