@@ -89,22 +89,45 @@ int main() {
 <script>
     // shift + tab, tab
     $('#mde').addEventListener('keydown', function (e) {
-        e.preventDefault()
 
         const start = this.selectionStart
         const end = this.selectionEnd
 
         switch (true) {
             case e.shiftKey && e.keyCode == 9:
-                this.value = this.value.substring(0, start - 4) + this.value.substring(end)
-                this.selectionStart = this.selectionEnd = start - 4
+                e.preventDefault()
 
-                break;
+                let indent = 4
+
+                const line = this.value.substring(0, start).match(/[^\n]+$/g)
+
+                let spaces, cursorPos = 0
+                if (line == null) {
+                    break
+                }
+                spaces = line[0].match(/^\s*/)[0].length
+                cursorPos = line[0].match(/^(\s)+(.*)/)[0].length
+
+                if (spaces < indent) {
+                    if (spaces < 0) {
+                        spaces = 0
+                    }
+                    indent = spaces
+                }
+
+                const begin = start - cursorPos + spaces
+
+                this.value = this.value.substring(0, begin - indent) + this.value.substring(begin)
+                this.selectionStart = this.selectionEnd = begin - indent
+
+                break
             case e.keyCode == 9:
+                e.preventDefault()
+
                 this.value = this.value.substring(0, start) + "    " + this.value.substring(end)
                 this.selectionStart = this.selectionEnd = start + 4
 
-                break;
+                break
         }
     })
 </script>
