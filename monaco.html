@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <meta name='viewport' content='width=device-width' />
+
+    <title>Marked in the browser</title>
+    <link rel="stylesheet" href="monaco-editor/min/vs/editor/editor.main.css">
+    <script type="text/javascript" src="monaco-editor/min/vs/loader.js"></script>
+</head>
+
+<body>
+    <h2>Monaco Editor Sample</h2>
+    <div id="container" style="width: 800px; height: 600px; border: 1px solid grey"></div>
+</body>
+<script type="module">
+    let editor
+
+    require.config({ paths: { vs: "monaco-editor/min/vs" } });
+
+    let data = `
+# Hello markdown
+
+Taste SimpleMDE.
+
+\`\`\`go
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    fmt.Println("안녕, 세상!")
+}
+\`\`\`
+
+
+\`\`\`c
+#include < stdio.h >
+
+int main() {
+    printf("Hello World!\\n");
+
+    return 0;
+}
+\`\`\`
+
+`
+
+    document.addEventListener("DOMContentLoaded", function () {
+        require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('container'), {
+                // value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+                // language: 'javascript',
+                value: [data].join('\n'),
+                language: 'markdown',
+                readOnly: true
+            })
+
+        })
+    })
+
+    window.onload = function() {
+        // editor.updateOptions({ readOnly: false })
+    }
+</script>
+
+</html>
