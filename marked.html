@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <meta name='viewport' content='width=device-width' />
+
+    <title>Marked in the browser</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"></script>
+</head>
+
+<body>
+    <div id="titles">
+        <label id="editor-title" for="mde">Markdown</label>
+        <label id="preview-title">Preview</label>
+    </div>
+
+    <div id="editor-container">
+        <textarea id="mde"></textarea>
+    </div>
+    <div id="preview-container">
+        <div id="preview"></div>
+    </div>
+</body>
+
+<script>
+    const $ = document.querySelector.bind(document)
+    const $$ = document.querySelectorAll.bind(document)
+
+    let data = `
+# Hello markdown
+
+Taste SimpleMDE.
+
+\`\`\`go
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    fmt.Println("안녕, 세상!")
+}
+\`\`\`
+
+
+\`\`\`c
+#include < stdio.h >
+
+int main() {
+    printf("Hello World!\\n");
+
+    return 0;
+}
+\`\`\`
+
+`
+    const renderer = {
+        code(code, langName) {
+            if (langName == undefined || langName == "") {
+                return code
+            }
+
+            try {
+                return `<pre class="code-area language-${langName}">${hljs.highlight(code, { language: langName }).value}</pre>`
+            } catch (err) {
+                return false
+            }
+        },
+    }
+
+    marked.use({ renderer })
+
+    $("#mde").value = data
+    $("#preview").innerHTML = marked.parse(data)
+
+    // hljs.highlightAll()
+
+    $("#mde").addEventListener("input", () => {
+        $("#preview").innerHTML = marked.parse($("#mde").value)
+    })
+</script>
+
+<script>
+    // shift + tab, tab
+    $('#mde').addEventListener('keydown', function (e) {
+
+        const start = this.selectionStart
+        const end = this.selectionEnd
+
+        switch (true) {
+            case e.shiftKey && e.keyCode == 9:
+                e.preventDefault()
+
+                let indent = 4
+
+                const line = this.value.substring(0, start).match(/[^\n]+$/g)
+
+                let spaces, cursorPos = 0
+                if (line == null) {
+                    break
+                }
+                spaces = line[0].match(/^\s*/)[0].length
+                cursorPos = line[0].match(/^(\s)+(.*)/)[0].length
+
+                if (spaces < indent) {
+                    if (spaces < 0) {
+                        spaces = 0
+                    }
+                    indent = spaces
+                }
+
+                const begin = start - cursorPos + spaces
+
+                this.value = this.value.substring(0, begin - indent) + this.value.substring(begin)
+                this.selectionStart = this.selectionEnd = begin - indent
+
+                break
+            case e.keyCode == 9:
+                e.preventDefault()
+
+                this.value = this.value.substring(0, start) + "    " + this.value.substring(end)
+                this.selectionStart = this.selectionEnd = start + 4
+
+                break
+        }
+    })
+</script>
+
+<style>
+    body {
+        margin: 1px;
+        padding: 1px;
+    }
+
+    #titles {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    #editor-title,
+    #preview-title {
+        width: 50%;
+    }
+
+    #editor-container {
+        width: calc(50vw - 11px);
+        height: calc(100vh - 58px);
+        padding: 0;
+        float: left;
+    }
+
+    #mde {
+        width: 100%;
+        height: 100%;
+    }
+
+    #preview-container {
+        width: calc(50vw - 11px);
+        height: calc(100vh - 58px);
+        float: right;
+    }
+
+    .code-area {
+        background-color: antiquewhite;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        overflow: auto;
+    }
+</style>
+
+</html>

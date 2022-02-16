@@ -5,31 +5,51 @@
     <meta charset="utf-8">
     <meta name='viewport' content='width=device-width' />
 
-    <title>Marked in the browser</title>
+    <title>Markdown editor</title>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"></script>
+
+    <link rel="stylesheet" href="monaco-editor/min/vs/editor/editor.main.css">
+    <script type="text/javascript" src="monaco-editor/min/vs/loader.js"></script>
 </head>
 
 <body>
+    <h2>Markdown editor practice</h2>
+    <!-- <button onclick="toggleEdit()">Toggle writing</button> -->
+    <button id="toggle-edit" disabled onclick="toggleEdit()">Waiting</button>
     <div id="titles">
-        <label id="editor-title" for="mde">Markdown</label>
+        <label id="editor-title" for="mde">Editor</label>
         <label id="preview-title">Preview</label>
     </div>
 
-    <div id="editor-container">
+    <!-- <div id="editor-container">
         <textarea id="mde"></textarea>
-    </div>
+    </div> -->
+    <div id="editor-container"></div>
     <div id="preview-container">
         <div id="preview"></div>
     </div>
+    <!-- <div id="container" style="width: 800px; height: 600px; border: 1px solid grey"></div> -->
 </body>
 
 <script>
     const $ = document.querySelector.bind(document)
     const $$ = document.querySelectorAll.bind(document)
+
+    let editor
+
+    const monacoEditorReadOnly = {
+        true: "Edit disabled",
+        false: "Edit enabled",
+    }
+
+    function toggleEdit() {
+        editor.updateOptions({ readOnly: !editor.getRawOptions().readOnly })
+        $("#toggle-edit").innerText = monacoEditorReadOnly[editor.getRawOptions().readOnly]
+    }
 
     let data = `
 # Hello markdown
@@ -60,6 +80,7 @@ int main() {
 \`\`\`
 
 `
+
     const renderer = {
         code(code, langName) {
             if (langName == undefined || langName == "") {
@@ -76,66 +97,53 @@ int main() {
 
     marked.use({ renderer })
 
-    $("#mde").value = data
     $("#preview").innerHTML = marked.parse(data)
 
-    // hljs.highlightAll()
-
-    $("#mde").addEventListener("input", () => {
-        $("#preview").innerHTML = marked.parse($("#mde").value)
-    })
+    document.addEventListener("DOMContentLoaded", () => { })
+    window.onload = () => { }
 </script>
 
-<script>
-    // shift + tab, tab
-    $('#mde').addEventListener('keydown', function (e) {
+<script type="module">
+    require.config({ paths: { vs: "monaco-editor/min/vs" } });
 
-        const start = this.selectionStart
-        const end = this.selectionEnd
+    const editorConfig = {
+        theme: 'vs-dark',
+        minimap: { enabled: false },
+        automaticLayout: true,
+        // readOnly: false,
+        // value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+        // language: 'javascript',
+        value: [data].join('\n'),
+        language: 'markdown',
+    }
 
-        switch (true) {
-            case e.shiftKey && e.keyCode == 9:
-                e.preventDefault()
+    require(['vs/editor/editor.main'], () => {
+        editor = monaco.editor.create($("#editor-container"), editorConfig)
 
-                let indent = 4
+        // Prevent show tooltip when readOnly is true
+        const messageContribution = editor.getContribution("editor.contrib.messageController")
+        editor.onDidAttemptReadOnlyEdit(() => { messageContribution.dispose() })
 
-                const line = this.value.substring(0, start).match(/[^\n]+$/g)
+        // Toggle readOnly
+        $("#toggle-edit").innerHTML = monacoEditorReadOnly[!(!editor.getRawOptions().readOnly)]
+        $("#toggle-edit").disabled = false
+    })
 
-                let spaces, cursorPos = 0
-                if (line == null) {
-                    break
-                }
-                spaces = line[0].match(/^\s*/)[0].length
-                cursorPos = line[0].match(/^(\s)+(.*)/)[0].length
+    document.addEventListener("DOMContentLoaded", () => {
+        $("#editor-container").addEventListener("DOMNodeInserted", () => {
+            if (editor != undefined) {
+                $("#preview").innerHTML = marked.parse(editor.getValue())
+            }
+        })
 
-                if (spaces < indent) {
-                    if (spaces < 0) {
-                        spaces = 0
-                    }
-                    indent = spaces
-                }
-
-                const begin = start - cursorPos + spaces
-
-                this.value = this.value.substring(0, begin - indent) + this.value.substring(begin)
-                this.selectionStart = this.selectionEnd = begin - indent
-
-                break
-            case e.keyCode == 9:
-                e.preventDefault()
-
-                this.value = this.value.substring(0, start) + "    " + this.value.substring(end)
-                this.selectionStart = this.selectionEnd = start + 4
-
-                break
-        }
+        // console.log(!(!editor.getRawOptions().readOnly))
     })
 </script>
 
 <style>
     body {
-        margin: 1px;
-        padding: 1px;
+        margin: 2px;
+        padding: 2px;
     }
 
     #titles {
@@ -150,8 +158,8 @@ int main() {
     }
 
     #editor-container {
-        width: calc(50vw - 11px);
-        height: calc(100vh - 58px);
+        width: calc(50vw - 13px);
+        height: calc(100vh - 140px);
         padding: 0;
         float: left;
     }
@@ -162,8 +170,8 @@ int main() {
     }
 
     #preview-container {
-        width: calc(50vw - 11px);
-        height: calc(100vh - 58px);
+        width: calc(50vw - 13px);
+        height: calc(100vh - 140px);
         float: right;
     }
 
