@@ -129,6 +129,7 @@ int main() {
         $("#toggle-edit").disabled = false
 
         // https://github.com/microsoft/monaco-editor/issues/102#issuecomment-939240565
+        // https://blog.csdn.net/weixin_34313182/article/details/85954277
         editor.addCommand(monaco.KeyCode.Space, () => editor.trigger('', 'hideSuggestWidget', null), 'suggestWidgetVisible');
     })
 
