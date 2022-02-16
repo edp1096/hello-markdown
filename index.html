@@ -127,6 +127,9 @@ int main() {
         // Toggle readOnly
         $("#toggle-edit").innerHTML = monacoEditorReadOnly[!(!editor.getRawOptions().readOnly)]
         $("#toggle-edit").disabled = false
+
+        // https://github.com/microsoft/monaco-editor/issues/102#issuecomment-939240565
+        editor.addCommand(monaco.KeyCode.Space, () => editor.trigger('', 'hideSuggestWidget', null), 'suggestWidgetVisible');
     })
 
     document.addEventListener("DOMContentLoaded", () => {
